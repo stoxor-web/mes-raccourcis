@@ -21,6 +21,7 @@ import {
   closeShortcutDialog,
   getElements,
   openCategoryDialog,
+  openEditCategoryDialog,
   openShortcutDialog,
   render,
   setUserUi
@@ -344,6 +345,15 @@ function attachCardEvents() {
     };
   });
 
+  document.querySelectorAll('[data-edit-category]').forEach(button => {
+    button.onclick = () => {
+      const category = state.categories.find(item => item.id === button.dataset.editCategory);
+      if (!category) return;
+
+      openEditCategoryDialog(elements, category);
+    };
+  });
+
   document.querySelectorAll('[data-delete-category]').forEach(button => {
     button.onclick = async () => {
       const categoryId = button.dataset.deleteCategory;
@@ -547,13 +557,29 @@ function bindEvents() {
   elements.categoryForm.addEventListener('submit', async event => {
     event.preventDefault();
 
+    const editId = elements.categoryEditId?.value || '';
     const name = elements.categoryName.value.trim();
     const color = elements.categoryColor.value;
     const parentId = elements.categoryParent?.value || null;
 
     if (!name) return;
 
+    if (editId && editId === parentId) {
+      alert('Une section ne peut pas être sa propre parente.');
+      return;
+    }
+
+    if (editId) {
+      const descendants = getDescendantCategoryIds(state.categories, editId);
+      if (parentId && descendants.includes(parentId)) {
+        alert('Impossible de placer une section dans une de ses sous-sections.');
+        return;
+      }
+    }
+
     const alreadyExists = state.categories.some(category => {
+      if (editId && category.id === editId) return false;
+
       return (
         category.name.toLowerCase() === name.toLowerCase() &&
         (category.parentId ?? null) === parentId
@@ -565,13 +591,25 @@ function bindEvents() {
       return;
     }
 
-    state.categories.push({
-      id: crypto.randomUUID(),
-      name,
-      color,
-      parentId,
-      order: state.categories.length
-    });
+    if (editId) {
+      const index = state.categories.findIndex(category => category.id === editId);
+      if (index === -1) return;
+
+      state.categories[index] = {
+        ...state.categories[index],
+        name,
+        color,
+        parentId
+      };
+    } else {
+      state.categories.push({
+        id: crypto.randomUUID(),
+        name,
+        color,
+        parentId,
+        order: state.categories.length
+      });
+    }
 
     try {
       await persistState();
@@ -579,7 +617,7 @@ function bindEvents() {
       closeCategoryDialog(elements);
     } catch (error) {
       console.error(error);
-      alert('Impossible de créer cette section.');
+      alert(editId ? 'Impossible de modifier cette section.' : 'Impossible de créer cette section.');
     }
   });
 

@@ -1,4 +1,9 @@
-import { escapeHtml } from './utils.js';
+import {
+  escapeHtml,
+  getCategoryPath,
+  getChildrenCategories,
+  getDescendantCategoryIds
+} from './utils.js';
 
 export function getElements() {
   return {
@@ -26,6 +31,7 @@ export function getElements() {
     siteDescription: document.getElementById('siteDescription'),
     categoryName: document.getElementById('categoryName'),
     categoryColor: document.getElementById('categoryColor'),
+    categoryParent: document.getElementById('categoryParent'),
     closeShortcutDialog: document.getElementById('closeShortcutDialog'),
     cancelShortcutBtn: document.getElementById('cancelShortcutBtn'),
     closeCategoryDialog: document.getElementById('closeCategoryDialog'),
@@ -64,16 +70,26 @@ export function setUserUi(elements, user) {
   }
 }
 
+function getCategoryLabel(categories, category) {
+  const path = getCategoryPath(categories, category.id);
+  return path.map(item => item.name).join(' > ');
+}
+
 export function getFilteredShortcuts(state, elements) {
   const query = elements.searchInput.value.trim().toLowerCase();
   const selectedCategory = elements.categoryFilter.value;
 
+  let allowedCategoryIds = null;
+  if (selectedCategory !== 'all') {
+    allowedCategoryIds = getDescendantCategoryIds(state.categories, selectedCategory);
+  }
+
   return state.shortcuts.filter(shortcut => {
     const category = state.categories.find(item => item.id === shortcut.categoryId);
-    const categoryName = category?.name || '';
+    const categoryName = category ? getCategoryLabel(state.categories, category) : '';
 
     const matchesCategory =
-      selectedCategory === 'all' || shortcut.categoryId === selectedCategory;
+      selectedCategory === 'all' || allowedCategoryIds.includes(shortcut.categoryId);
 
     const haystack =
       `${shortcut.name} ${shortcut.url} ${shortcut.description || ''} ${categoryName}`.toLowerCase();
@@ -87,16 +103,21 @@ export function getFilteredShortcuts(state, elements) {
 export function refreshCategoryOptions(state, elements) {
   const currentFilter = elements.categoryFilter.value || 'all';
 
-  const optionsHtml = state.categories
-    .map(
-      category =>
-        `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`
-    )
+  const categoriesSorted = [...state.categories].sort((a, b) => a.order - b.order);
+
+  const optionsHtml = categoriesSorted
+    .map(category => {
+      const label = getCategoryLabel(state.categories, category);
+      return `<option value="${escapeHtml(category.id)}">${escapeHtml(label)}</option>`;
+    })
     .join('');
 
   elements.siteCategory.innerHTML = optionsHtml;
   elements.categoryFilter.innerHTML =
     `<option value="all">Toutes les sections</option>${optionsHtml}`;
+
+  elements.categoryParent.innerHTML =
+    `<option value="">Aucune (section principale)</option>${optionsHtml}`;
 
   if ([...elements.categoryFilter.options].some(option => option.value === currentFilter)) {
     elements.categoryFilter.value = currentFilter;
@@ -114,10 +135,8 @@ function renderCard(shortcut, color) {
       data-shortcut-id="${escapeHtml(shortcut.id)}"
       data-shortcut-category-id="${escapeHtml(shortcut.categoryId)}"
     >
-      <div class="card-top">
-        <div class="site-info">
-          <h3>${escapeHtml(shortcut.name)}</h3>
-        </div>
+      <div class="site-info">
+        <h3>${escapeHtml(shortcut.name)}</h3>
       </div>
 
       ${shortcut.description ? `<div class="site-description">${escapeHtml(shortcut.description)}</div>` : ''}
@@ -131,52 +150,57 @@ function renderCard(shortcut, color) {
   `;
 }
 
-export function render(state, elements) {
-  refreshCategoryOptions(state, elements);
+function renderCategoryNode(state, category, filteredShortcuts, depth = 0) {
+  const items = filteredShortcuts.filter(item => item.categoryId === category.id);
+  const children = getChildrenCategories(state.categories, category.id);
+  const childHtml = children.map(child => renderCategoryNode(state, child, filteredShortcuts, depth + 1)).join('');
 
-  const filtered = getFilteredShortcuts(state, elements);
+  const hasSearchOrFilter =
+    document.getElementById('searchInput')?.value ||
+    document.getElementById('categoryFilter')?.value !== 'all';
 
-  const grouped = state.categories.map(category => ({
-    ...category,
-    items: filtered.filter(item => item.categoryId === category.id)
-  }));
+  if (items.length === 0 && childHtml === '' && hasSearchOrFilter) {
+    return '';
+  }
 
-  elements.sectionsContainer.innerHTML = '';
-
-  const anyVisible = grouped.some(group => group.items.length > 0);
-
-  grouped.forEach(group => {
-    if (group.items.length === 0 && (elements.searchInput.value || elements.categoryFilter.value !== 'all')) {
-      return;
-    }
-
-    const section = document.createElement('section');
-    section.className = 'category-section glass';
-    section.style.setProperty('--section-color', group.color);
-    section.setAttribute('draggable', 'true');
-    section.dataset.categoryId = group.id;
-
-    section.innerHTML = `
+  return `
+    <section
+      class="category-section glass"
+      style="--section-color:${escapeHtml(category.color)}; margin-left:${depth * 22}px"
+      draggable="true"
+      data-category-id="${escapeHtml(category.id)}"
+    >
       <div class="section-header">
         <div class="section-title-wrap">
           <span class="section-dot"></span>
-          <span class="section-title">${escapeHtml(group.name)}</span>
-          <span class="section-badge">${group.items.length} site(s)</span>
+          <span class="section-title">${escapeHtml(category.name)}</span>
+          <span class="section-badge">${items.length} site(s)</span>
         </div>
-        <button class="btn danger" data-delete-category="${escapeHtml(group.id)}" type="button">
+        <button class="btn danger" data-delete-category="${escapeHtml(category.id)}" type="button">
           Supprimer la section
         </button>
       </div>
 
-      <div class="cards shortcut-drop-zone" data-category-id="${escapeHtml(group.id)}">
-        ${group.items.map(item => renderCard(item, group.color)).join('')}
+      <div class="cards shortcut-drop-zone" data-category-id="${escapeHtml(category.id)}">
+        ${items.map(item => renderCard(item, category.color)).join('')}
       </div>
-    `;
 
-    elements.sectionsContainer.appendChild(section);
-  });
+      ${childHtml ? `<div class="subsections">${childHtml}</div>` : ''}
+    </section>
+  `;
+}
 
-  if (!anyVisible) {
+export function render(state, elements) {
+  refreshCategoryOptions(state, elements);
+
+  const filtered = getFilteredShortcuts(state, elements);
+  const roots = getChildrenCategories(state.categories, null);
+
+  elements.sectionsContainer.innerHTML = roots
+    .map(root => renderCategoryNode(state, root, filtered, 0))
+    .join('');
+
+  if (!elements.sectionsContainer.innerHTML.trim()) {
     elements.sectionsContainer.innerHTML = `
       <div class="empty-state glass">
         Aucun raccourci trouvé avec ces filtres. Essaie une autre recherche ou ajoute un nouveau site.
@@ -192,9 +216,7 @@ export function render(state, elements) {
 export function openShortcutDialog(elements, state, shortcut = null) {
   elements.shortcutForm.reset();
   elements.shortcutId.value = '';
-  elements.shortcutDialogTitle.textContent = shortcut
-    ? 'Modifier un raccourci'
-    : 'Ajouter un raccourci';
+  elements.shortcutDialogTitle.textContent = shortcut ? 'Modifier un raccourci' : 'Ajouter un raccourci';
 
   if (shortcut) {
     elements.shortcutId.value = shortcut.id;
@@ -213,9 +235,10 @@ export function closeShortcutDialog(elements) {
   elements.shortcutDialog.close();
 }
 
-export function openCategoryDialog(elements, color) {
+export function openCategoryDialog(elements, color, parentId = '') {
   elements.categoryForm.reset();
   elements.categoryColor.value = color;
+  elements.categoryParent.value = parentId;
   elements.categoryDialog.showModal();
 }
 

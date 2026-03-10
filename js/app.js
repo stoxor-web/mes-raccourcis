@@ -345,6 +345,15 @@ function attachCardEvents() {
     };
   });
 
+  document.querySelectorAll('[data-add-subcategory]').forEach(button => {
+    button.onclick = () => {
+      const parent = state.categories.find(item => item.id === button.dataset.addSubcategory);
+      if (!parent) return;
+
+      openCategoryDialog(elements, parent.color || '#7dd3fc', parent.id);
+    };
+  });
+
   document.querySelectorAll('[data-edit-category]').forEach(button => {
     button.onclick = () => {
       const category = state.categories.find(item => item.id === button.dataset.editCategory);

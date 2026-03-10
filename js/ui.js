@@ -67,7 +67,7 @@ export function setUserUi(elements, user) {
     elements.userName.textContent = '';
     elements.userEmail.textContent = '';
     elements.subtitleText.textContent =
-      'Connecte-toi avec Google pour retrouver tes raccourcis sur n’importe quel appareil.';
+      'Connecte-toi avec Google pour retrouver tes raccourcis partout.';
     elements.syncStatus.textContent = 'Mode local de démonstration';
   }
 }
@@ -168,7 +168,7 @@ function renderCategoryNode(state, category, filteredShortcuts, depth = 0) {
   return `
     <section
       class="category-section glass"
-      style="--section-color:${escapeHtml(category.color)}; margin-left:${depth * 22}px"
+      style="--section-color:${escapeHtml(category.color)}; margin-left:${depth * 18}px"
       draggable="true"
       data-category-id="${escapeHtml(category.id)}"
     >
@@ -178,7 +178,11 @@ function renderCategoryNode(state, category, filteredShortcuts, depth = 0) {
           <span class="section-title">${escapeHtml(category.name)}</span>
           <span class="section-badge">${items.length} site(s)</span>
         </div>
-        <div class="card-actions">
+
+        <div class="section-actions">
+          <button class="btn secondary" data-add-subcategory="${escapeHtml(category.id)}" type="button">
+            + Sous-section
+          </button>
           <button class="btn secondary" data-edit-category="${escapeHtml(category.id)}" type="button">
             Modifier
           </button>
@@ -209,7 +213,7 @@ export function render(state, elements) {
 
   if (!elements.sectionsContainer.innerHTML.trim()) {
     elements.sectionsContainer.innerHTML = `
-      <div class="empty-state glass">
+      <div class="empty-state">
         Aucun raccourci trouvé avec ces filtres. Essaie une autre recherche ou ajoute un nouveau site.
       </div>
     `;
@@ -245,7 +249,7 @@ export function closeShortcutDialog(elements) {
 export function openCategoryDialog(elements, color, parentId = '') {
   elements.categoryForm.reset();
   elements.categoryEditId.value = '';
-  elements.categoryDialogTitle.textContent = 'Ajouter une section';
+  elements.categoryDialogTitle.textContent = parentId ? 'Ajouter une sous-section' : 'Ajouter une section';
   elements.categoryColor.value = color;
   elements.categoryParent.value = parentId;
   elements.categoryDialog.showModal();

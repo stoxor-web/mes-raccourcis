@@ -1,4 +1,8 @@
-import { signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+import {
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged
+} from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 import { auth, provider } from './firebase-config.js';
 
 export async function loginWithGoogle() {

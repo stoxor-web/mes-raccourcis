@@ -1,1 +1,80 @@
+<!DOCTYPE html>
+        </label>
+        <input id="importInput" type="file" accept="application/json" hidden />
+        <div class="muted-note" id="syncStatus">Mode local de démonstration</div>
+      </aside>
+    </header>
 
+    <section class="toolbar glass">
+      <input id="searchInput" class="input" type="search" placeholder="Rechercher un site, une URL, une description..." />
+      <select id="categoryFilter">
+        <option value="all">Toutes les sections</option>
+      </select>
+      <button class="btn secondary" id="clearFiltersBtn" type="button">Réinitialiser</button>
+    </section>
+
+    <main id="sectionsContainer" class="section-grid"></main>
+  </div>
+
+  <dialog id="shortcutDialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="shortcutDialogTitle">Ajouter un raccourci</h2>
+        <button class="btn secondary" id="closeShortcutDialog" type="button">Fermer</button>
+      </div>
+      <form id="shortcutForm">
+        <input type="hidden" id="shortcutId" />
+        <div class="form-grid">
+          <div class="field">
+            <label for="siteName">Nom du site</label>
+            <input id="siteName" class="input" required placeholder="Ex : Gmail" />
+          </div>
+          <div class="field">
+            <label for="siteUrl">URL</label>
+            <input id="siteUrl" class="input" required placeholder="https://mail.google.com" />
+          </div>
+          <div class="field">
+            <label for="siteCategory">Section</label>
+            <select id="siteCategory" required></select>
+          </div>
+          <div class="field full">
+            <label for="siteDescription">Description</label>
+            <textarea id="siteDescription" placeholder="Ex : Messagerie perso et pro"></textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn secondary" id="cancelShortcutBtn">Annuler</button>
+          <button type="submit" class="btn primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog id="categoryDialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Ajouter une section</h2>
+        <button class="btn secondary" id="closeCategoryDialog" type="button">Fermer</button>
+      </div>
+      <form id="categoryForm">
+        <div class="form-grid">
+          <div class="field">
+            <label for="categoryName">Nom de la section</label>
+            <input id="categoryName" class="input" required placeholder="Ex : Travail" />
+          </div>
+          <div class="field">
+            <label for="categoryColor">Couleur de la section</label>
+            <input id="categoryColor" class="input" type="color" value="#7dd3fc" />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn secondary" id="cancelCategoryBtn">Annuler</button>
+          <button type="submit" class="btn primary">Créer la section</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

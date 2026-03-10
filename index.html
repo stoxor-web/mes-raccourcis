@@ -28,16 +28,26 @@
             </div>
 
             <div class="auth-actions">
-              <button class="btn primary" id="loginBtn" type="button">Se connecter avec Google</button>
-              <button class="btn secondary hidden" id="logoutBtn" type="button">Se déconnecter</button>
+              <button class="btn primary" id="loginBtn" type="button">
+                Se connecter avec Google
+              </button>
+              <button class="btn secondary hidden" id="logoutBtn" type="button">
+                Se déconnecter
+              </button>
             </div>
           </div>
         </div>
 
         <div class="top-actions">
-          <button class="btn primary" id="addShortcutBtn" type="button">+ Ajouter un raccourci</button>
-          <button class="btn secondary" id="addCategoryBtn" type="button">+ Ajouter une section</button>
-          <button class="btn secondary" id="resetDemoBtn" type="button">Restaurer l’exemple</button>
+          <button class="btn primary" id="addShortcutBtn" type="button">
+            + Ajouter un raccourci
+          </button>
+          <button class="btn secondary" id="addCategoryBtn" type="button">
+            + Ajouter une section
+          </button>
+          <button class="btn secondary" id="resetDemoBtn" type="button">
+            Restaurer l’exemple
+          </button>
         </div>
       </section>
 
@@ -57,9 +67,15 @@
           </div>
         </div>
 
-        <button class="btn success" id="exportBtn" type="button">Exporter mes données</button>
+        <button class="btn success" id="exportBtn" type="button">
+          Exporter mes données
+        </button>
 
-        <label class="btn secondary" for="importInput" style="display:inline-block; text-align:center;">
+        <label
+          class="btn secondary"
+          for="importInput"
+          style="display:inline-block; text-align:center;"
+        >
           Importer mes données
         </label>
         <input id="importInput" type="file" accept="application/json" hidden />
@@ -75,10 +91,14 @@
         type="search"
         placeholder="Rechercher un site, une URL, une description..."
       />
+
       <select id="categoryFilter">
         <option value="all">Toutes les sections</option>
       </select>
-      <button class="btn secondary" id="clearFiltersBtn" type="button">Réinitialiser</button>
+
+      <button class="btn secondary" id="clearFiltersBtn" type="button">
+        Réinitialiser
+      </button>
     </section>
 
     <main id="sectionsContainer" class="section-grid"></main>
@@ -88,42 +108,53 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2 id="shortcutDialogTitle">Ajouter un raccourci</h2>
-        <button class="btn secondary" id="closeShortcutDialog" type="button">Fermer</button>
+        <button class="btn secondary" id="closeShortcutDialog" type="button">
+          Fermer
+        </button>
       </div>
 
       <form id="shortcutForm">
         <input type="hidden" id="shortcutId" />
 
-<div class="form-grid">
-  <div class="field">
-    <label for="categoryName">Nom de la section</label>
-    <input id="categoryName" class="input" required placeholder="Ex : Travail" />
-  </div>
-  <div class="field">
-    <label for="categoryColor">Couleur de la section</label>
-    <input id="categoryColor" class="input" type="color" value="#7dd3fc" />
-  </div>
-  <div class="field full">
-    <label for="categoryParent">Section parente</label>
-    <select id="categoryParent">
-      <option value="">Aucune (section principale)</option>
-    </select>
-  </div>
-</div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="siteName">Nom du site</label>
+            <input
+              id="siteName"
+              class="input"
+              required
+              placeholder="Ex : Gmail"
+            />
+          </div>
 
           <div class="field">
-            <label for="siteCategory">Section</label>
+            <label for="siteUrl">URL</label>
+            <input
+              id="siteUrl"
+              class="input"
+              required
+              placeholder="https://mail.google.com"
+            />
+          </div>
+
+          <div class="field">
+            <label for="siteCategory">Section / sous-section</label>
             <select id="siteCategory" required></select>
           </div>
 
           <div class="field full">
             <label for="siteDescription">Description</label>
-            <textarea id="siteDescription" placeholder="Ex : Messagerie perso et pro"></textarea>
+            <textarea
+              id="siteDescription"
+              placeholder="Ex : Messagerie perso et pro"
+            ></textarea>
           </div>
         </div>
 
         <div class="modal-actions">
-          <button type="button" class="btn secondary" id="cancelShortcutBtn">Annuler</button>
+          <button type="button" class="btn secondary" id="cancelShortcutBtn">
+            Annuler
+          </button>
           <button type="submit" class="btn primary">Enregistrer</button>
         </div>
       </form>
@@ -134,24 +165,45 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2>Ajouter une section</h2>
-        <button class="btn secondary" id="closeCategoryDialog" type="button">Fermer</button>
+        <button class="btn secondary" id="closeCategoryDialog" type="button">
+          Fermer
+        </button>
       </div>
 
       <form id="categoryForm">
         <div class="form-grid">
           <div class="field">
             <label for="categoryName">Nom de la section</label>
-            <input id="categoryName" class="input" required placeholder="Ex : Travail" />
+            <input
+              id="categoryName"
+              class="input"
+              required
+              placeholder="Ex : Travail"
+            />
           </div>
 
           <div class="field">
             <label for="categoryColor">Couleur de la section</label>
-            <input id="categoryColor" class="input" type="color" value="#7dd3fc" />
+            <input
+              id="categoryColor"
+              class="input"
+              type="color"
+              value="#7dd3fc"
+            />
+          </div>
+
+          <div class="field full">
+            <label for="categoryParent">Section parente</label>
+            <select id="categoryParent">
+              <option value="">Aucune (section principale)</option>
+            </select>
           </div>
         </div>
 
         <div class="modal-actions">
-          <button type="button" class="btn secondary" id="cancelCategoryBtn">Annuler</button>
+          <button type="button" class="btn secondary" id="cancelCategoryBtn">
+            Annuler
+          </button>
           <button type="submit" class="btn primary">Créer la section</button>
         </div>
       </form>

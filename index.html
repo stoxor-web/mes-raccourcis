@@ -3,102 +3,78 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mes Raccourcis WEB</title>
+  <title>LUCAS - Raccourcis web</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="container">
-    <header>
-      <section class="hero glass">
-        <div class="hero-top">
-          <div>
-            <h1>Mes raccourcis web</h1>
-            <p class="subtitle" id="subtitleText">
-              Connecte-toi avec Google pour retrouver tes raccourcis sur n’importe quel appareil.
-            </p>
-          </div>
+    <header class="topbar glass">
+      <div class="topbar-left">
+        <div>
+          <h1>Mes raccourcis</h1>
+          <p class="subtitle" id="subtitleText">
+            Connecte-toi avec Google pour retrouver tes raccourcis partout.
+          </p>
+        </div>
+      </div>
 
-          <div class="auth-box glass-soft">
-            <div id="userInfo" class="user-info hidden">
-              <img id="userAvatar" class="avatar" alt="Avatar utilisateur" />
-              <div>
-                <div id="userName" class="user-name"></div>
-                <div id="userEmail" class="user-email"></div>
-              </div>
-            </div>
+      <div class="topbar-center">
+        <input
+          id="searchInput"
+          class="input search-large"
+          type="search"
+          placeholder="Rechercher un site, une section, une description..."
+        />
+      </div>
 
-            <div class="auth-actions">
-              <button class="btn primary" id="loginBtn" type="button">
-                Se connecter avec Google
-              </button>
-              <button class="btn secondary hidden" id="logoutBtn" type="button">
-                Se déconnecter
-              </button>
-            </div>
+      <div class="topbar-right">
+        <div id="userInfo" class="user-info hidden">
+          <img id="userAvatar" class="avatar" alt="Avatar utilisateur" />
+          <div class="user-meta">
+            <div id="userName" class="user-name"></div>
+            <div id="userEmail" class="user-email"></div>
           </div>
         </div>
 
-        <div class="top-actions">
-          <button class="btn primary" id="addShortcutBtn" type="button">
-            + Ajouter un raccourci
-          </button>
-          <button class="btn secondary" id="addCategoryBtn" type="button">
-            + Ajouter une section
-          </button>
-          <button class="btn secondary" id="resetDemoBtn" type="button">
-            Restaurer l’exemple
-          </button>
+        <div class="auth-actions">
+          <button class="btn primary" id="loginBtn" type="button">Connexion Google</button>
+          <button class="btn secondary hidden" id="logoutBtn" type="button">Déconnexion</button>
         </div>
-      </section>
-
-      <aside class="panel glass">
-        <div class="stats">
-          <div class="stat">
-            <div class="value" id="shortcutCount">0</div>
-            <div class="label">Raccourcis</div>
-          </div>
-          <div class="stat">
-            <div class="value" id="categoryCount">0</div>
-            <div class="label">Sections</div>
-          </div>
-          <div class="stat">
-            <div class="value" id="visibleCount">0</div>
-            <div class="label">Affichés</div>
-          </div>
-        </div>
-
-        <button class="btn success" id="exportBtn" type="button">
-          Exporter mes données
-        </button>
-
-        <label
-          class="btn secondary"
-          for="importInput"
-          style="display:inline-block; text-align:center;"
-        >
-          Importer mes données
-        </label>
-        <input id="importInput" type="file" accept="application/json" hidden />
-
-        <div class="muted-note" id="syncStatus">Mode local de démonstration</div>
-      </aside>
+      </div>
     </header>
 
-    <section class="toolbar glass">
-      <input
-        id="searchInput"
-        class="input"
-        type="search"
-        placeholder="Rechercher un site, une URL, une description..."
-      />
+    <section class="quickbar glass">
+      <div class="quickbar-left">
+        <button class="btn primary" id="addShortcutBtn" type="button">+ Raccourci</button>
+        <button class="btn secondary" id="addCategoryBtn" type="button">+ Section</button>
+      </div>
 
-      <select id="categoryFilter">
-        <option value="all">Toutes les sections</option>
-      </select>
+      <div class="quickbar-right">
+        <select id="categoryFilter">
+          <option value="all">Toutes les sections</option>
+        </select>
+        <button class="btn secondary" id="clearFiltersBtn" type="button">Réinitialiser</button>
+        <button class="btn secondary" id="resetDemoBtn" type="button">Exemple</button>
+        <button class="btn success" id="exportBtn" type="button">Exporter</button>
+        <label class="btn secondary import-label" for="importInput">Importer</label>
+        <input id="importInput" type="file" accept="application/json" hidden />
+      </div>
+    </section>
 
-      <button class="btn secondary" id="clearFiltersBtn" type="button">
-        Réinitialiser
-      </button>
+    <section class="statusbar">
+      <div class="status-pill">
+        <span class="status-value" id="shortcutCount">0</span>
+        <span class="status-label">Raccourcis</span>
+      </div>
+      <div class="status-pill">
+        <span class="status-value" id="categoryCount">0</span>
+        <span class="status-label">Sections</span>
+      </div>
+      <div class="status-pill">
+        <span class="status-value" id="visibleCount">0</span>
+        <span class="status-label">Affichés</span>
+      </div>
+      <div class="sync-note" id="syncStatus">Mode local de démonstration</div>
     </section>
 
     <main id="sectionsContainer" class="section-grid"></main>
@@ -108,9 +84,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2 id="shortcutDialogTitle">Ajouter un raccourci</h2>
-        <button class="btn secondary" id="closeShortcutDialog" type="button">
-          Fermer
-        </button>
+        <button class="btn secondary" id="closeShortcutDialog" type="button">Fermer</button>
       </div>
 
       <form id="shortcutForm">
@@ -139,9 +113,7 @@
         </div>
 
         <div class="modal-actions">
-          <button type="button" class="btn secondary" id="cancelShortcutBtn">
-            Annuler
-          </button>
+          <button type="button" class="btn secondary" id="cancelShortcutBtn">Annuler</button>
           <button type="submit" class="btn primary">Enregistrer</button>
         </div>
       </form>
@@ -152,9 +124,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2 id="categoryDialogTitle">Ajouter une section</h2>
-        <button class="btn secondary" id="closeCategoryDialog" type="button">
-          Fermer
-        </button>
+        <button class="btn secondary" id="closeCategoryDialog" type="button">Fermer</button>
       </div>
 
       <form id="categoryForm">
@@ -167,7 +137,7 @@
           </div>
 
           <div class="field">
-            <label for="categoryColor">Couleur de la section</label>
+            <label for="categoryColor">Couleur</label>
             <input id="categoryColor" class="input" type="color" value="#7dd3fc" />
           </div>
 
@@ -180,9 +150,7 @@
         </div>
 
         <div class="modal-actions">
-          <button type="button" class="btn secondary" id="cancelCategoryBtn">
-            Annuler
-          </button>
+          <button type="button" class="btn secondary" id="cancelCategoryBtn">Annuler</button>
           <button type="submit" class="btn primary">Enregistrer</button>
         </div>
       </form>

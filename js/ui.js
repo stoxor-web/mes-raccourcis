@@ -21,14 +21,16 @@ export function getElements() {
     visibleCount: document.getElementById('visibleCount'),
     shortcutDialog: document.getElementById('shortcutDialog'),
     categoryDialog: document.getElementById('categoryDialog'),
+    categoryDialogTitle: document.getElementById('categoryDialogTitle'),
     shortcutForm: document.getElementById('shortcutForm'),
     categoryForm: document.getElementById('categoryForm'),
-    shortcutDialogTitle: document.getElementById('shortcutDialogTitle'),
+    shortcutDialogTitleText: document.getElementById('shortcutDialogTitle'),
     shortcutId: document.getElementById('shortcutId'),
     siteName: document.getElementById('siteName'),
     siteUrl: document.getElementById('siteUrl'),
     siteCategory: document.getElementById('siteCategory'),
     siteDescription: document.getElementById('siteDescription'),
+    categoryEditId: document.getElementById('categoryEditId'),
     categoryName: document.getElementById('categoryName'),
     categoryColor: document.getElementById('categoryColor'),
     categoryParent: document.getElementById('categoryParent'),
@@ -176,9 +178,14 @@ function renderCategoryNode(state, category, filteredShortcuts, depth = 0) {
           <span class="section-title">${escapeHtml(category.name)}</span>
           <span class="section-badge">${items.length} site(s)</span>
         </div>
-        <button class="btn danger" data-delete-category="${escapeHtml(category.id)}" type="button">
-          Supprimer la section
-        </button>
+        <div class="card-actions">
+          <button class="btn secondary" data-edit-category="${escapeHtml(category.id)}" type="button">
+            Modifier
+          </button>
+          <button class="btn danger" data-delete-category="${escapeHtml(category.id)}" type="button">
+            Supprimer
+          </button>
+        </div>
       </div>
 
       <div class="cards shortcut-drop-zone" data-category-id="${escapeHtml(category.id)}">
@@ -216,7 +223,7 @@ export function render(state, elements) {
 export function openShortcutDialog(elements, state, shortcut = null) {
   elements.shortcutForm.reset();
   elements.shortcutId.value = '';
-  elements.shortcutDialogTitle.textContent = shortcut ? 'Modifier un raccourci' : 'Ajouter un raccourci';
+  elements.shortcutDialogTitleText.textContent = shortcut ? 'Modifier un raccourci' : 'Ajouter un raccourci';
 
   if (shortcut) {
     elements.shortcutId.value = shortcut.id;
@@ -237,8 +244,20 @@ export function closeShortcutDialog(elements) {
 
 export function openCategoryDialog(elements, color, parentId = '') {
   elements.categoryForm.reset();
+  elements.categoryEditId.value = '';
+  elements.categoryDialogTitle.textContent = 'Ajouter une section';
   elements.categoryColor.value = color;
   elements.categoryParent.value = parentId;
+  elements.categoryDialog.showModal();
+}
+
+export function openEditCategoryDialog(elements, category) {
+  elements.categoryForm.reset();
+  elements.categoryEditId.value = category.id;
+  elements.categoryDialogTitle.textContent = 'Modifier la section';
+  elements.categoryName.value = category.name || '';
+  elements.categoryColor.value = category.color || '#7dd3fc';
+  elements.categoryParent.value = category.parentId ?? '';
   elements.categoryDialog.showModal();
 }
 

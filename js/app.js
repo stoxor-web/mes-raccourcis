@@ -38,7 +38,15 @@ async function persistState() {
     localStorage.setItem('dashboard-raccourcis-cache', JSON.stringify(state));
     return;
   }
+
   await saveFullState(currentUser.uid, state);
+}
+
+function rerender() {
+  render(state, elements);
+  attachCardEvents();
+  attachSectionDragEvents();
+  attachShortcutDragEvents();
 }
 
 function clearSectionDragStates() {
@@ -57,36 +65,36 @@ function clearShortcutDragStates() {
   });
 }
 
-function rerender() {
-  render(state, elements);
-  attachCardEvents();
-  attachSectionDragEvents();
-  attachShortcutDragEvents();
-}
-
 function moveCategory(fromId, toId, placeBefore) {
   if (!fromId || !toId || fromId === toId) return;
 
   const fromIndex = state.categories.findIndex(category => category.id === fromId);
   const toIndex = state.categories.findIndex(category => category.id === toId);
+
   if (fromIndex === -1 || toIndex === -1) return;
 
-  const moved = state.categories[fromIndex];
-  const target = state.categories[toIndex];
+  const fromCategory = state.categories[fromIndex];
+  const toCategory = state.categories[toIndex];
 
-  if (moved.parentId !== target.parentId) return;
+  if ((fromCategory.parentId ?? null) !== (toCategory.parentId ?? null)) return;
 
   const [movedCategory] = state.categories.splice(fromIndex, 1);
+
   let newIndex = state.categories.findIndex(category => category.id === toId);
   if (!placeBefore) newIndex += 1;
 
   state.categories.splice(newIndex, 0, movedCategory);
-  state.categories = state.categories.map((category, index) => ({ ...category, order: index }));
+  state.categories = state.categories.map((category, index) => ({
+    ...category,
+    order: index
+  }));
 
-  persistState().then(rerender).catch(error => {
-    console.error(error);
-    alert('Impossible d’enregistrer le nouvel ordre des sections.');
-  });
+  persistState()
+    .then(rerender)
+    .catch(error => {
+      console.error(error);
+      alert('Impossible d’enregistrer le nouvel ordre des sections.');
+    });
 }
 
 function moveShortcut(shortcutId, targetCategoryId, targetShortcutId = null, placeBefore = false) {
@@ -104,24 +112,37 @@ function moveShortcut(shortcutId, targetCategoryId, targetShortcutId = null, pla
     }, 0);
 
     remaining.splice(insertIndex, 0, draggedShortcut);
-    state.shortcuts = remaining.map((item, index) => ({ ...item, order: index }));
-    persistState().then(rerender).catch(error => {
-      console.error(error);
-      alert('Impossible d’enregistrer le déplacement du raccourci.');
-    });
+    state.shortcuts = remaining.map((item, index) => ({
+      ...item,
+      order: index
+    }));
+
+    persistState()
+      .then(rerender)
+      .catch(error => {
+        console.error(error);
+        alert('Impossible d’enregistrer le déplacement du raccourci.');
+      });
+
     return;
   }
 
   const targetIndex = remaining.findIndex(item => item.id === targetShortcutId);
-  const insertIndex = targetIndex === -1 ? remaining.length : placeBefore ? targetIndex : targetIndex + 1;
+  const insertIndex =
+    targetIndex === -1 ? remaining.length : placeBefore ? targetIndex : targetIndex + 1;
 
   remaining.splice(insertIndex, 0, draggedShortcut);
-  state.shortcuts = remaining.map((item, index) => ({ ...item, order: index }));
+  state.shortcuts = remaining.map((item, index) => ({
+    ...item,
+    order: index
+  }));
 
-  persistState().then(rerender).catch(error => {
-    console.error(error);
-    alert('Impossible d’enregistrer le déplacement du raccourci.');
-  });
+  persistState()
+    .then(rerender)
+    .catch(error => {
+      console.error(error);
+      alert('Impossible d’enregistrer le déplacement du raccourci.');
+    });
 }
 
 function attachSectionDragEvents() {
@@ -157,7 +178,9 @@ function attachSectionDragEvents() {
 
       const dragged = state.categories.find(cat => cat.id === draggedCategoryId);
       const target = state.categories.find(cat => cat.id === section.dataset.categoryId);
-      if (!dragged || !target || dragged.parentId !== target.parentId) return;
+
+      if (!dragged || !target) return;
+      if ((dragged.parentId ?? null) !== (target.parentId ?? null)) return;
 
       const rect = section.getBoundingClientRect();
       const offsetY = event.clientY - rect.top;
@@ -179,7 +202,9 @@ function attachSectionDragEvents() {
 
       const dragged = state.categories.find(cat => cat.id === draggedCategoryId);
       const target = state.categories.find(cat => cat.id === section.dataset.categoryId);
-      if (!dragged || !target || dragged.parentId !== target.parentId) return;
+
+      if (!dragged || !target) return;
+      if ((dragged.parentId ?? null) !== (target.parentId ?? null)) return;
 
       const rect = section.getBoundingClientRect();
       const offsetY = event.clientY - rect.top;
@@ -252,6 +277,7 @@ function attachShortcutDragEvents() {
   zones.forEach(zone => {
     zone.addEventListener('dragover', event => {
       if (!draggedShortcutId) return;
+
       event.preventDefault();
       event.stopPropagation();
       zone.classList.add('shortcut-zone-active');
@@ -281,7 +307,9 @@ function attachCardEvents() {
   document.querySelectorAll('[data-edit-id]').forEach(button => {
     button.onclick = () => {
       const item = state.shortcuts.find(shortcut => shortcut.id === button.dataset.editId);
-      if (item) openShortcutDialog(elements, state, item);
+      if (item) {
+        openShortcutDialog(elements, state, item);
+      }
     };
   });
 
@@ -295,7 +323,10 @@ function attachCardEvents() {
 
       state.shortcuts = state.shortcuts
         .filter(shortcut => shortcut.id !== item.id)
-        .map((shortcut, index) => ({ ...shortcut, order: index }));
+        .map((shortcut, index) => ({
+          ...shortcut,
+          order: index
+        }));
 
       try {
         if (currentUser) {
@@ -320,7 +351,9 @@ function attachCardEvents() {
       if (!category) return;
 
       const descendantIds = getDescendantCategoryIds(state.categories, categoryId);
-      const relatedShortcuts = state.shortcuts.filter(item => descendantIds.includes(item.categoryId)).length;
+      const relatedShortcuts = state.shortcuts.filter(item =>
+        descendantIds.includes(item.categoryId)
+      ).length;
 
       const ok = confirm(
         `Supprimer la section « ${category.name} », ses sous-sections et ses ${relatedShortcuts} raccourci(s) ?`
@@ -331,11 +364,17 @@ function attachCardEvents() {
 
       state.categories = state.categories
         .filter(item => !descendantIds.includes(item.id))
-        .map((item, index) => ({ ...item, order: index }));
+        .map((item, index) => ({
+          ...item,
+          order: index
+        }));
 
       state.shortcuts = state.shortcuts
         .filter(item => !descendantIds.includes(item.categoryId))
-        .map((item, index) => ({ ...item, order: index }));
+        .map((item, index) => ({
+          ...item,
+          order: index
+        }));
 
       if (descendantIds.includes(elements.categoryFilter.value)) {
         elements.categoryFilter.value = 'all';
@@ -369,9 +408,10 @@ async function initializeAuthenticatedState(user) {
 
   const cloudState = await loadCloudState(user.uid);
 
-  state = (cloudState.categories.length || cloudState.shortcuts.length)
-    ? cloudState
-    : cloneDemoData();
+  state =
+    cloudState.categories.length || cloudState.shortcuts.length
+      ? cloudState
+      : cloneDemoData();
 
   rerender();
 }
@@ -407,13 +447,28 @@ function bindEvents() {
   });
 
   elements.addCategoryBtn.addEventListener('click', () => {
-    openCategoryDialog(elements, defaultPalette[state.categories.length % defaultPalette.length], '');
+    openCategoryDialog(
+      elements,
+      defaultPalette[state.categories.length % defaultPalette.length],
+      ''
+    );
   });
 
-  elements.closeShortcutDialog.addEventListener('click', () => closeShortcutDialog(elements));
-  elements.cancelShortcutBtn.addEventListener('click', () => closeShortcutDialog(elements));
-  elements.closeCategoryDialog.addEventListener('click', () => closeCategoryDialog(elements));
-  elements.cancelCategoryBtn.addEventListener('click', () => closeCategoryDialog(elements));
+  elements.closeShortcutDialog.addEventListener('click', () => {
+    closeShortcutDialog(elements);
+  });
+
+  elements.cancelShortcutBtn.addEventListener('click', () => {
+    closeShortcutDialog(elements);
+  });
+
+  elements.closeCategoryDialog.addEventListener('click', () => {
+    closeCategoryDialog(elements);
+  });
+
+  elements.cancelCategoryBtn.addEventListener('click', () => {
+    closeCategoryDialog(elements);
+  });
 
   elements.searchInput.addEventListener('input', rerender);
   elements.categoryFilter.addEventListener('change', rerender);
@@ -446,6 +501,7 @@ function bindEvents() {
     event.preventDefault();
 
     const id = elements.shortcutId.value || crypto.randomUUID();
+
     const shortcut = {
       id,
       name: elements.siteName.value.trim(),
@@ -462,12 +518,21 @@ function bindEvents() {
     const existingIndex = state.shortcuts.findIndex(item => item.id === id);
 
     if (existingIndex >= 0) {
-      state.shortcuts[existingIndex] = { ...state.shortcuts[existingIndex], ...shortcut };
+      state.shortcuts[existingIndex] = {
+        ...state.shortcuts[existingIndex],
+        ...shortcut
+      };
     } else {
-      state.shortcuts.push({ ...shortcut, order: state.shortcuts.length });
+      state.shortcuts.push({
+        ...shortcut,
+        order: state.shortcuts.length
+      });
     }
 
-    state.shortcuts = state.shortcuts.map((item, index) => ({ ...item, order: index }));
+    state.shortcuts = state.shortcuts.map((item, index) => ({
+      ...item,
+      order: index
+    }));
 
     try {
       await persistState();
@@ -484,17 +549,18 @@ function bindEvents() {
 
     const name = elements.categoryName.value.trim();
     const color = elements.categoryColor.value;
-    const parentId = elements.categoryParent.value || null;
+    const parentId = elements.categoryParent?.value || null;
 
     if (!name) return;
 
-    if (
-      state.categories.some(
-        category =>
-          category.name.toLowerCase() === name.toLowerCase() &&
-          (category.parentId ?? null) === parentId
-      )
-    ) {
+    const alreadyExists = state.categories.some(category => {
+      return (
+        category.name.toLowerCase() === name.toLowerCase() &&
+        (category.parentId ?? null) === parentId
+      );
+    });
+
+    if (alreadyExists) {
       alert('Cette section existe déjà à cet endroit.');
       return;
     }
@@ -538,7 +604,9 @@ function bindEvents() {
   });
 
   elements.resetDemoBtn.addEventListener('click', async () => {
-    const ok = confirm('Restaurer les données d’exemple ? Cela remplacera les raccourcis actuels.');
+    const ok = confirm(
+      'Restaurer les données d’exemple ? Cela remplacera les raccourcis actuels.'
+    );
     if (!ok) return;
 
     try {

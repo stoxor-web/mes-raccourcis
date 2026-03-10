@@ -32,7 +32,9 @@ function shortcutDoc(uid, shortcutId) {
 }
 
 export async function upsertUserProfile(user) {
-  if (!user?.uid) throw new Error('Utilisateur invalide');
+  if (!user?.uid) {
+    throw new Error('Utilisateur invalide');
+  }
 
   await setDoc(
     userDoc(user.uid),
@@ -47,7 +49,9 @@ export async function upsertUserProfile(user) {
 }
 
 export async function loadCloudState(uid) {
-  if (!uid) throw new Error('UID manquant');
+  if (!uid) {
+    throw new Error('UID manquant');
+  }
 
   const categoriesQuery = query(categoriesCollection(uid), orderBy('order', 'asc'));
   const shortcutsQuery = query(shortcutsCollection(uid), orderBy('order', 'asc'));
@@ -71,7 +75,9 @@ export async function loadCloudState(uid) {
 }
 
 export async function hasCloudData(uid) {
-  if (!uid) throw new Error('UID manquant');
+  if (!uid) {
+    throw new Error('UID manquant');
+  }
 
   const [categoriesSnap, shortcutsSnap] = await Promise.all([
     getDocs(categoriesCollection(uid)),
@@ -82,7 +88,10 @@ export async function hasCloudData(uid) {
 }
 
 export async function saveFullState(uid, state) {
-  if (!uid) throw new Error('UID manquant');
+  if (!uid) {
+    throw new Error('UID manquant');
+  }
+
   if (!state || !Array.isArray(state.categories) || !Array.isArray(state.shortcuts)) {
     throw new Error('État invalide');
   }
@@ -151,6 +160,9 @@ export async function deleteCategoryAndShortcuts(uid, categoryIds = [], shortcut
 }
 
 export async function deleteShortcut(uid, shortcutId) {
-  if (!uid || !shortcutId) throw new Error('Paramètres manquants');
+  if (!uid || !shortcutId) {
+    throw new Error('Paramètres manquants');
+  }
+
   await deleteDoc(shortcutDoc(uid, shortcutId));
 }

@@ -1,12 +1,80 @@
 <!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUCAS - Raccourcis web</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <section class="hero glass">
+        <div class="hero-top">
+          <div>
+            <h1>Mes raccourcis web</h1>
+            <p class="subtitle" id="subtitleText">
+              Connecte-toi avec Google pour retrouver tes raccourcis sur n’importe quel appareil.
+            </p>
+          </div>
+
+          <div class="auth-box glass-soft">
+            <div id="userInfo" class="user-info hidden">
+              <img id="userAvatar" class="avatar" alt="Avatar utilisateur" />
+              <div>
+                <div id="userName" class="user-name"></div>
+                <div id="userEmail" class="user-email"></div>
+              </div>
+            </div>
+
+            <div class="auth-actions">
+              <button class="btn primary" id="loginBtn" type="button">Se connecter avec Google</button>
+              <button class="btn secondary hidden" id="logoutBtn" type="button">Se déconnecter</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <button class="btn primary" id="addShortcutBtn" type="button">+ Ajouter un raccourci</button>
+          <button class="btn secondary" id="addCategoryBtn" type="button">+ Ajouter une section</button>
+          <button class="btn secondary" id="resetDemoBtn" type="button">Restaurer l’exemple</button>
+        </div>
+      </section>
+
+      <aside class="panel glass">
+        <div class="stats">
+          <div class="stat">
+            <div class="value" id="shortcutCount">0</div>
+            <div class="label">Raccourcis</div>
+          </div>
+          <div class="stat">
+            <div class="value" id="categoryCount">0</div>
+            <div class="label">Sections</div>
+          </div>
+          <div class="stat">
+            <div class="value" id="visibleCount">0</div>
+            <div class="label">Affichés</div>
+          </div>
+        </div>
+
+        <button class="btn success" id="exportBtn" type="button">Exporter mes données</button>
+
+        <label class="btn secondary" for="importInput" style="display:inline-block; text-align:center;">
+          Importer mes données
         </label>
         <input id="importInput" type="file" accept="application/json" hidden />
+
         <div class="muted-note" id="syncStatus">Mode local de démonstration</div>
       </aside>
     </header>
 
     <section class="toolbar glass">
-      <input id="searchInput" class="input" type="search" placeholder="Rechercher un site, une URL, une description..." />
+      <input
+        id="searchInput"
+        class="input"
+        type="search"
+        placeholder="Rechercher un site, une URL, une description..."
+      />
       <select id="categoryFilter">
         <option value="all">Toutes les sections</option>
       </select>
@@ -22,26 +90,32 @@
         <h2 id="shortcutDialogTitle">Ajouter un raccourci</h2>
         <button class="btn secondary" id="closeShortcutDialog" type="button">Fermer</button>
       </div>
+
       <form id="shortcutForm">
         <input type="hidden" id="shortcutId" />
+
         <div class="form-grid">
           <div class="field">
             <label for="siteName">Nom du site</label>
             <input id="siteName" class="input" required placeholder="Ex : Gmail" />
           </div>
+
           <div class="field">
             <label for="siteUrl">URL</label>
             <input id="siteUrl" class="input" required placeholder="https://mail.google.com" />
           </div>
+
           <div class="field">
             <label for="siteCategory">Section</label>
             <select id="siteCategory" required></select>
           </div>
+
           <div class="field full">
             <label for="siteDescription">Description</label>
             <textarea id="siteDescription" placeholder="Ex : Messagerie perso et pro"></textarea>
           </div>
         </div>
+
         <div class="modal-actions">
           <button type="button" class="btn secondary" id="cancelShortcutBtn">Annuler</button>
           <button type="submit" class="btn primary">Enregistrer</button>
@@ -56,17 +130,20 @@
         <h2>Ajouter une section</h2>
         <button class="btn secondary" id="closeCategoryDialog" type="button">Fermer</button>
       </div>
+
       <form id="categoryForm">
         <div class="form-grid">
           <div class="field">
             <label for="categoryName">Nom de la section</label>
             <input id="categoryName" class="input" required placeholder="Ex : Travail" />
           </div>
+
           <div class="field">
             <label for="categoryColor">Couleur de la section</label>
             <input id="categoryColor" class="input" type="color" value="#7dd3fc" />
           </div>
         </div>
+
         <div class="modal-actions">
           <button type="button" class="btn secondary" id="cancelCategoryBtn">Annuler</button>
           <button type="submit" class="btn primary">Créer la section</button>

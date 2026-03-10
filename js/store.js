@@ -32,9 +32,7 @@ function shortcutDoc(uid, shortcutId) {
 }
 
 export async function upsertUserProfile(user) {
-  if (!user?.uid) {
-    throw new Error('Utilisateur invalide');
-  }
+  if (!user?.uid) throw new Error('Utilisateur invalide');
 
   await setDoc(
     userDoc(user.uid),
@@ -49,9 +47,7 @@ export async function upsertUserProfile(user) {
 }
 
 export async function loadCloudState(uid) {
-  if (!uid) {
-    throw new Error('UID manquant');
-  }
+  if (!uid) throw new Error('UID manquant');
 
   const categoriesQuery = query(categoriesCollection(uid), orderBy('order', 'asc'));
   const shortcutsQuery = query(shortcutsCollection(uid), orderBy('order', 'asc'));
@@ -64,6 +60,7 @@ export async function loadCloudState(uid) {
   return {
     categories: categoriesSnap.docs.map(item => ({
       id: item.id,
+      parentId: null,
       ...item.data()
     })),
     shortcuts: shortcutsSnap.docs.map(item => ({
@@ -74,9 +71,7 @@ export async function loadCloudState(uid) {
 }
 
 export async function hasCloudData(uid) {
-  if (!uid) {
-    throw new Error('UID manquant');
-  }
+  if (!uid) throw new Error('UID manquant');
 
   const [categoriesSnap, shortcutsSnap] = await Promise.all([
     getDocs(categoriesCollection(uid)),
@@ -87,10 +82,7 @@ export async function hasCloudData(uid) {
 }
 
 export async function saveFullState(uid, state) {
-  if (!uid) {
-    throw new Error('UID manquant');
-  }
-
+  if (!uid) throw new Error('UID manquant');
   if (!state || !Array.isArray(state.categories) || !Array.isArray(state.shortcuts)) {
     throw new Error('État invalide');
   }
@@ -98,36 +90,29 @@ export async function saveFullState(uid, state) {
   const batch = writeBatch(db);
 
   const existingCategories = await getDocs(categoriesCollection(uid));
-  existingCategories.forEach(item => {
-    batch.delete(item.ref);
-  });
+  existingCategories.forEach(item => batch.delete(item.ref));
 
   const existingShortcuts = await getDocs(shortcutsCollection(uid));
-  existingShortcuts.forEach(item => {
-    batch.delete(item.ref);
-  });
+  existingShortcuts.forEach(item => batch.delete(item.ref));
 
   state.categories.forEach((category, index) => {
-    const ref = categoryDoc(uid, category.id);
-
-    batch.set(ref, {
+    batch.set(categoryDoc(uid, category.id), {
       name: category.name || '',
       color: category.color || '#7dd3fc',
-      order: index,
+      parentId: category.parentId ?? null,
+      order: Number.isFinite(category.order) ? category.order : index,
       createdAt: category.createdAt || serverTimestamp(),
       updatedAt: serverTimestamp()
     });
   });
 
   state.shortcuts.forEach((shortcut, index) => {
-    const ref = shortcutDoc(uid, shortcut.id);
-
-    batch.set(ref, {
+    batch.set(shortcutDoc(uid, shortcut.id), {
       name: shortcut.name || '',
       url: shortcut.url || '',
       categoryId: shortcut.categoryId || '',
       description: shortcut.description || '',
-      order: index,
+      order: Number.isFinite(shortcut.order) ? shortcut.order : index,
       createdAt: shortcut.createdAt || serverTimestamp(),
       updatedAt: serverTimestamp()
     });
@@ -137,29 +122,27 @@ export async function saveFullState(uid, state) {
 }
 
 export async function migrateLocalStateToCloud(uid, localState) {
-  if (!uid || !localState) {
-    return;
-  }
+  if (!uid || !localState) return;
 
   const alreadyHasData = await hasCloudData(uid);
-  if (alreadyHasData) {
-    return;
-  }
+  if (alreadyHasData) return;
 
   await saveFullState(uid, localState);
 }
 
-export async function deleteCategoryAndShortcuts(uid, categoryId, shortcuts = []) {
-  if (!uid || !categoryId) {
+export async function deleteCategoryAndShortcuts(uid, categoryIds = [], shortcuts = []) {
+  if (!uid || !Array.isArray(categoryIds) || categoryIds.length === 0) {
     throw new Error('Paramètres manquants');
   }
 
   const batch = writeBatch(db);
 
-  batch.delete(categoryDoc(uid, categoryId));
+  categoryIds.forEach(categoryId => {
+    batch.delete(categoryDoc(uid, categoryId));
+  });
 
   shortcuts
-    .filter(item => item.categoryId === categoryId)
+    .filter(item => categoryIds.includes(item.categoryId))
     .forEach(item => {
       batch.delete(shortcutDoc(uid, item.id));
     });
@@ -168,9 +151,6 @@ export async function deleteCategoryAndShortcuts(uid, categoryId, shortcuts = []
 }
 
 export async function deleteShortcut(uid, shortcutId) {
-  if (!uid || !shortcutId) {
-    throw new Error('Paramètres manquants');
-  }
-
+  if (!uid || !shortcutId) throw new Error('Paramètres manquants');
   await deleteDoc(shortcutDoc(uid, shortcutId));
 }

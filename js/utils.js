@@ -13,20 +13,34 @@ export const defaultPalette = [
 
 export const demoData = {
   categories: [
-    { id: crypto.randomUUID(), name: 'Travail', color: '#7dd3fc', order: 0 },
-    { id: crypto.randomUUID(), name: 'Communication', color: '#4ade80', order: 1 },
-    { id: crypto.randomUUID(), name: 'Outils', color: '#a78bfa', order: 2 },
-    { id: crypto.randomUUID(), name: 'Loisirs', color: '#fbbf24', order: 3 }
+    { id: crypto.randomUUID(), name: 'Travail', color: '#7dd3fc', parentId: null, order: 0 },
+    { id: crypto.randomUUID(), name: 'Communication', color: '#4ade80', parentId: null, order: 1 },
+    { id: crypto.randomUUID(), name: 'Outils', color: '#a78bfa', parentId: null, order: 2 },
+    { id: crypto.randomUUID(), name: 'Loisirs', color: '#fbbf24', parentId: null, order: 3 }
   ],
   shortcuts: []
 };
+
+const travailId = demoData.categories[0].id;
+const communicationId = demoData.categories[1].id;
+const outilsId = demoData.categories[2].id;
+const loisirsId = demoData.categories[3].id;
+
+const clientsId = crypto.randomUUID();
+demoData.categories.push({
+  id: clientsId,
+  name: 'Clients',
+  color: '#7dd3fc',
+  parentId: travailId,
+  order: 4
+});
 
 demoData.shortcuts = [
   {
     id: crypto.randomUUID(),
     name: 'Gmail',
     url: 'https://mail.google.com',
-    categoryId: demoData.categories[1].id,
+    categoryId: communicationId,
     description: 'Messagerie rapide',
     order: 0
   },
@@ -34,15 +48,15 @@ demoData.shortcuts = [
     id: crypto.randomUUID(),
     name: 'Google Drive',
     url: 'https://drive.google.com',
-    categoryId: demoData.categories[0].id,
-    description: 'Documents et fichiers',
+    categoryId: clientsId,
+    description: 'Documents clients',
     order: 1
   },
   {
     id: crypto.randomUUID(),
     name: 'YouTube',
     url: 'https://www.youtube.com',
-    categoryId: demoData.categories[3].id,
+    categoryId: loisirsId,
     description: 'Vidéos et abonnements',
     order: 2
   },
@@ -50,7 +64,7 @@ demoData.shortcuts = [
     id: crypto.randomUUID(),
     name: 'Notion',
     url: 'https://www.notion.so',
-    categoryId: demoData.categories[2].id,
+    categoryId: outilsId,
     description: 'Notes et organisation',
     order: 3
   }
@@ -82,10 +96,7 @@ export function loadLegacyLocalState() {
     if (!raw) return null;
 
     const parsed = JSON.parse(raw);
-
-    if (!Array.isArray(parsed.categories) || !Array.isArray(parsed.shortcuts)) {
-      return null;
-    }
+    if (!Array.isArray(parsed.categories) || !Array.isArray(parsed.shortcuts)) return null;
 
     const categories = parsed.categories.map((category, index) => {
       if (typeof category === 'string') {
@@ -93,6 +104,7 @@ export function loadLegacyLocalState() {
           id: crypto.randomUUID(),
           name: category,
           color: defaultPalette[index % defaultPalette.length],
+          parentId: null,
           order: index
         };
       }
@@ -101,6 +113,7 @@ export function loadLegacyLocalState() {
         id: crypto.randomUUID(),
         name: category.name,
         color: category.color || defaultPalette[index % defaultPalette.length],
+        parentId: category.parentId ?? null,
         order: index
       };
     });
@@ -111,7 +124,7 @@ export function loadLegacyLocalState() {
       id: shortcut.id || crypto.randomUUID(),
       name: shortcut.name || '',
       url: shortcut.url || '',
-      categoryId: categoryByName.get(shortcut.category) || categories[0]?.id || '',
+      categoryId: shortcut.categoryId || categoryByName.get(shortcut.category) || categories[0]?.id || '',
       description: shortcut.description || '',
       order: index
     }));
@@ -128,10 +141,7 @@ export function exportState(state) {
     shortcuts: state.shortcuts
   };
 
-  const blob = new Blob([JSON.stringify(payload, null, 2)], {
-    type: 'application/json'
-  });
-
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -154,6 +164,7 @@ export async function importStateFromFile(file) {
         id: crypto.randomUUID(),
         name: category,
         color: defaultPalette[index % defaultPalette.length],
+        parentId: null,
         order: index
       };
     }
@@ -162,6 +173,7 @@ export async function importStateFromFile(file) {
       id: category.id || crypto.randomUUID(),
       name: category.name || `Section ${index + 1}`,
       color: category.color || defaultPalette[index % defaultPalette.length],
+      parentId: category.parentId ?? null,
       order: Number.isFinite(category.order) ? category.order : index
     };
   });
@@ -172,14 +184,42 @@ export async function importStateFromFile(file) {
     id: shortcut.id || crypto.randomUUID(),
     name: shortcut.name || '',
     url: normalizeUrl(shortcut.url || ''),
-    categoryId:
-      shortcut.categoryId ||
-      categoryByName.get(shortcut.category) ||
-      categories[0]?.id ||
-      '',
+    categoryId: shortcut.categoryId || categoryByName.get(shortcut.category) || categories[0]?.id || '',
     description: shortcut.description || '',
     order: Number.isFinite(shortcut.order) ? shortcut.order : index
   }));
 
   return { categories, shortcuts };
+}
+
+export function getChildrenCategories(categories, parentId = null) {
+  return categories
+    .filter(category => (category.parentId ?? null) === parentId)
+    .sort((a, b) => a.order - b.order);
+}
+
+export function getCategoryPath(categories, categoryId) {
+  const path = [];
+  let current = categories.find(cat => cat.id === categoryId);
+
+  while (current) {
+    path.unshift(current);
+    current = categories.find(cat => cat.id === current.parentId);
+  }
+
+  return path;
+}
+
+export function getDescendantCategoryIds(categories, rootId) {
+  const ids = [rootId];
+  const walk = parentId => {
+    categories
+      .filter(cat => cat.parentId === parentId)
+      .forEach(child => {
+        ids.push(child.id);
+        walk(child.id);
+      });
+  };
+  walk(rootId);
+  return ids;
 }

@@ -94,16 +94,22 @@
       <form id="shortcutForm">
         <input type="hidden" id="shortcutId" />
 
-        <div class="form-grid">
-          <div class="field">
-            <label for="siteName">Nom du site</label>
-            <input id="siteName" class="input" required placeholder="Ex : Gmail" />
-          </div>
-
-          <div class="field">
-            <label for="siteUrl">URL</label>
-            <input id="siteUrl" class="input" required placeholder="https://mail.google.com" />
-          </div>
+<div class="form-grid">
+  <div class="field">
+    <label for="categoryName">Nom de la section</label>
+    <input id="categoryName" class="input" required placeholder="Ex : Travail" />
+  </div>
+  <div class="field">
+    <label for="categoryColor">Couleur de la section</label>
+    <input id="categoryColor" class="input" type="color" value="#7dd3fc" />
+  </div>
+  <div class="field full">
+    <label for="categoryParent">Section parente</label>
+    <select id="categoryParent">
+      <option value="">Aucune (section principale)</option>
+    </select>
+  </div>
+</div>
 
           <div class="field">
             <label for="siteCategory">Section</label>

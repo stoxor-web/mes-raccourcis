@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LUCAS - Raccourcis web</title>
+  <title>Mes Raccourcis WEB</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
@@ -119,22 +119,12 @@
         <div class="form-grid">
           <div class="field">
             <label for="siteName">Nom du site</label>
-            <input
-              id="siteName"
-              class="input"
-              required
-              placeholder="Ex : Gmail"
-            />
+            <input id="siteName" class="input" required placeholder="Ex : Gmail" />
           </div>
 
           <div class="field">
             <label for="siteUrl">URL</label>
-            <input
-              id="siteUrl"
-              class="input"
-              required
-              placeholder="https://mail.google.com"
-            />
+            <input id="siteUrl" class="input" required placeholder="https://mail.google.com" />
           </div>
 
           <div class="field">
@@ -144,10 +134,7 @@
 
           <div class="field full">
             <label for="siteDescription">Description</label>
-            <textarea
-              id="siteDescription"
-              placeholder="Ex : Messagerie perso et pro"
-            ></textarea>
+            <textarea id="siteDescription" placeholder="Ex : Messagerie perso et pro"></textarea>
           </div>
         </div>
 
@@ -164,32 +151,24 @@
   <dialog id="categoryDialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Ajouter une section</h2>
+        <h2 id="categoryDialogTitle">Ajouter une section</h2>
         <button class="btn secondary" id="closeCategoryDialog" type="button">
           Fermer
         </button>
       </div>
 
       <form id="categoryForm">
+        <input type="hidden" id="categoryEditId" />
+
         <div class="form-grid">
           <div class="field">
             <label for="categoryName">Nom de la section</label>
-            <input
-              id="categoryName"
-              class="input"
-              required
-              placeholder="Ex : Travail"
-            />
+            <input id="categoryName" class="input" required placeholder="Ex : Travail" />
           </div>
 
           <div class="field">
             <label for="categoryColor">Couleur de la section</label>
-            <input
-              id="categoryColor"
-              class="input"
-              type="color"
-              value="#7dd3fc"
-            />
+            <input id="categoryColor" class="input" type="color" value="#7dd3fc" />
           </div>
 
           <div class="field full">
@@ -204,7 +183,7 @@
           <button type="button" class="btn secondary" id="cancelCategoryBtn">
             Annuler
           </button>
-          <button type="submit" class="btn primary">Créer la section</button>
+          <button type="submit" class="btn primary">Enregistrer</button>
         </div>
       </form>
     </div>

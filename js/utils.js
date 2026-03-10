@@ -141,7 +141,10 @@ export function exportState(state) {
     shortcuts: state.shortcuts
   };
 
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: 'application/json'
+  });
+
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -184,7 +187,11 @@ export async function importStateFromFile(file) {
     id: shortcut.id || crypto.randomUUID(),
     name: shortcut.name || '',
     url: normalizeUrl(shortcut.url || ''),
-    categoryId: shortcut.categoryId || categoryByName.get(shortcut.category) || categories[0]?.id || '',
+    categoryId:
+      shortcut.categoryId ||
+      categoryByName.get(shortcut.category) ||
+      categories[0]?.id ||
+      '',
     description: shortcut.description || '',
     order: Number.isFinite(shortcut.order) ? shortcut.order : index
   }));
@@ -212,6 +219,7 @@ export function getCategoryPath(categories, categoryId) {
 
 export function getDescendantCategoryIds(categories, rootId) {
   const ids = [rootId];
+
   const walk = parentId => {
     categories
       .filter(cat => cat.parentId === parentId)
@@ -220,6 +228,7 @@ export function getDescendantCategoryIds(categories, rootId) {
         walk(child.id);
       });
   };
+
   walk(rootId);
   return ids;
 }

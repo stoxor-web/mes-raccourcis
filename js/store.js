@@ -31,6 +31,31 @@ function shortcutDoc(uid, shortcutId) {
   return doc(db, 'users', uid, 'shortcuts', shortcutId);
 }
 
+function normalizeCloudCategory(category, index) {
+  return {
+    id: category.id,
+    name: category.name || '',
+    color: category.color || '#7dd3fc',
+    parentId: category.parentId ?? null,
+    order: Number.isFinite(category.order) ? category.order : index
+  };
+}
+
+function normalizeCloudShortcut(shortcut, index) {
+  return {
+    id: shortcut.id,
+    name: shortcut.name || '',
+    url: shortcut.url || '',
+    categoryId: shortcut.categoryId || '',
+    description: shortcut.description || '',
+    order: Number.isFinite(shortcut.order) ? shortcut.order : index,
+    usageCount: Number.isFinite(shortcut.usageCount) ? shortcut.usageCount : 0,
+    lastUsedAt: shortcut.lastUsedAt || null,
+    createdAt: shortcut.createdAt || null,
+    updatedAt: shortcut.updatedAt || null
+  };
+}
+
 export async function upsertUserProfile(user) {
   if (!user?.uid) {
     throw new Error('Utilisateur invalide');
@@ -62,15 +87,12 @@ export async function loadCloudState(uid) {
   ]);
 
   return {
-    categories: categoriesSnap.docs.map(item => ({
-      id: item.id,
-      parentId: null,
-      ...item.data()
-    })),
-    shortcuts: shortcutsSnap.docs.map(item => ({
-      id: item.id,
-      ...item.data()
-    }))
+    categories: categoriesSnap.docs.map((item, index) =>
+      normalizeCloudCategory({ id: item.id, ...item.data() }, index)
+    ),
+    shortcuts: shortcutsSnap.docs.map((item, index) =>
+      normalizeCloudShortcut({ id: item.id, ...item.data() }, index)
+    )
   };
 }
 
@@ -122,6 +144,8 @@ export async function saveFullState(uid, state) {
       categoryId: shortcut.categoryId || '',
       description: shortcut.description || '',
       order: Number.isFinite(shortcut.order) ? shortcut.order : index,
+      usageCount: Number.isFinite(shortcut.usageCount) ? shortcut.usageCount : 0,
+      lastUsedAt: shortcut.lastUsedAt || null,
       createdAt: shortcut.createdAt || serverTimestamp(),
       updatedAt: serverTimestamp()
     });

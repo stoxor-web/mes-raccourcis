@@ -13,6 +13,7 @@ import {
   exportState,
   importStateFromFile,
   loadLegacyLocalState,
+  normalizeState,
   normalizeUrl,
   getDescendantCategoryIds
 } from './utils.js';
@@ -29,7 +30,7 @@ import {
 
 const elements = getElements();
 
-let state = cloneDemoData();
+let state = normalizeState(cloneDemoData());
 let currentUser = null;
 let draggedCategoryId = null;
 let draggedShortcutId = null;
@@ -305,6 +306,23 @@ function attachShortcutDragEvents() {
 }
 
 function attachCardEvents() {
+  document.querySelectorAll('[data-open-id]').forEach(link => {
+    link.onclick = async () => {
+      const item = state.shortcuts.find(shortcut => shortcut.id === link.dataset.openId);
+      if (!item) return;
+
+      item.usageCount = (item.usageCount || 0) + 1;
+      item.lastUsedAt = Date.now();
+
+      try {
+        await persistState();
+        rerender();
+      } catch (error) {
+        console.error(error);
+      }
+    };
+  });
+
   document.querySelectorAll('[data-edit-id]').forEach(button => {
     button.onclick = () => {
       const item = state.shortcuts.find(shortcut => shortcut.id === button.dataset.editId);
@@ -429,8 +447,8 @@ async function initializeAuthenticatedState(user) {
 
   state =
     cloudState.categories.length || cloudState.shortcuts.length
-      ? cloudState
-      : cloneDemoData();
+      ? normalizeState(cloudState)
+      : normalizeState(cloneDemoData());
 
   rerender();
 }
@@ -440,16 +458,13 @@ function initializeGuestState() {
   setUserUi(elements, null);
 
   const cache = localStorage.getItem('dashboard-raccourcis-cache');
-  state = cache ? JSON.parse(cache) : cloneDemoData();
+  state = cache ? normalizeState(JSON.parse(cache)) : normalizeState(cloneDemoData());
 
   rerender();
 }
 
 async function replaceState(nextState) {
-  state = {
-    categories: [...nextState.categories].sort((a, b) => a.order - b.order),
-    shortcuts: [...nextState.shortcuts].sort((a, b) => a.order - b.order)
-  };
+  state = normalizeState(nextState);
 
   if (currentUser) {
     await saveFullState(currentUser.uid, state);
@@ -544,7 +559,9 @@ function bindEvents() {
     } else {
       state.shortcuts.push({
         ...shortcut,
-        order: state.shortcuts.length
+        order: state.shortcuts.length,
+        usageCount: 0,
+        lastUsedAt: null
       });
     }
 

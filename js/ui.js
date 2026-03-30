@@ -45,7 +45,9 @@ export function getElements() {
     userName: document.getElementById('userName'),
     userEmail: document.getElementById('userEmail'),
     subtitleText: document.getElementById('subtitleText'),
-    syncStatus: document.getElementById('syncStatus')
+    syncStatus: document.getElementById('syncStatus'),
+    topUsedSection: document.getElementById('topUsedSection'),
+    topUsedContainer: document.getElementById('topUsedContainer')
   };
 }
 
@@ -75,6 +77,49 @@ export function setUserUi(elements, user) {
 function getCategoryLabel(categories, category) {
   const path = getCategoryPath(categories, category.id);
   return path.map(item => item.name).join(' > ');
+}
+
+function renderTopUsed(state, elements) {
+  const topShortcuts = [...state.shortcuts]
+    .filter(item => (item.usageCount || 0) > 0)
+    .sort((a, b) => {
+      const usageDiff = (b.usageCount || 0) - (a.usageCount || 0);
+      if (usageDiff !== 0) return usageDiff;
+      return (b.lastUsedAt || 0) - (a.lastUsedAt || 0);
+    })
+    .slice(0, 6);
+
+  if (!topShortcuts.length) {
+    elements.topUsedSection.classList.add('hidden');
+    elements.topUsedContainer.innerHTML = '';
+    return;
+  }
+
+  elements.topUsedSection.classList.remove('hidden');
+  elements.topUsedContainer.innerHTML = topShortcuts
+    .map(shortcut => {
+      const category = state.categories.find(item => item.id === shortcut.categoryId);
+      const categoryLabel = category ? getCategoryLabel(state.categories, category) : 'Sans section';
+
+      return `
+        <article class="top-used-card">
+          <h3>${escapeHtml(shortcut.name)}</h3>
+          <div class="top-used-meta">
+            ${escapeHtml(categoryLabel)} · ${escapeHtml(String(shortcut.usageCount || 0))} ouverture(s)
+          </div>
+          <a
+            class="btn primary"
+            href="${escapeHtml(shortcut.url)}"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-open-id="${escapeHtml(shortcut.id)}"
+          >
+            Ouvrir
+          </a>
+        </article>
+      `;
+    })
+    .join('');
 }
 
 export function getFilteredShortcuts(state, elements) {
@@ -144,7 +189,15 @@ function renderCard(shortcut, color) {
       ${shortcut.description ? `<div class="site-description">${escapeHtml(shortcut.description)}</div>` : ''}
 
       <div class="card-actions">
-        <a class="btn primary" href="${escapeHtml(shortcut.url)}" target="_blank" rel="noopener noreferrer">Ouvrir</a>
+        <a
+          class="btn primary"
+          href="${escapeHtml(shortcut.url)}"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-open-id="${escapeHtml(shortcut.id)}"
+        >
+          Ouvrir
+        </a>
         <button class="btn secondary" data-edit-id="${escapeHtml(shortcut.id)}" type="button">Modifier</button>
         <button class="btn danger" data-delete-id="${escapeHtml(shortcut.id)}" type="button">Supprimer</button>
       </div>
@@ -203,6 +256,7 @@ function renderCategoryNode(state, category, filteredShortcuts, depth = 0) {
 
 export function render(state, elements) {
   refreshCategoryOptions(state, elements);
+  renderTopUsed(state, elements);
 
   const filtered = getFilteredShortcuts(state, elements);
   const roots = getChildrenCategories(state.categories, null);

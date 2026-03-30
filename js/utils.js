@@ -42,7 +42,9 @@ demoData.shortcuts = [
     url: 'https://mail.google.com',
     categoryId: communicationId,
     description: 'Messagerie rapide',
-    order: 0
+    order: 0,
+    usageCount: 0,
+    lastUsedAt: null
   },
   {
     id: crypto.randomUUID(),
@@ -50,7 +52,9 @@ demoData.shortcuts = [
     url: 'https://drive.google.com',
     categoryId: clientsId,
     description: 'Documents clients',
-    order: 1
+    order: 1,
+    usageCount: 0,
+    lastUsedAt: null
   },
   {
     id: crypto.randomUUID(),
@@ -58,7 +62,9 @@ demoData.shortcuts = [
     url: 'https://www.youtube.com',
     categoryId: loisirsId,
     description: 'Vidéos et abonnements',
-    order: 2
+    order: 2,
+    usageCount: 0,
+    lastUsedAt: null
   },
   {
     id: crypto.randomUUID(),
@@ -66,7 +72,9 @@ demoData.shortcuts = [
     url: 'https://www.notion.so',
     categoryId: outilsId,
     description: 'Notes et organisation',
-    order: 3
+    order: 3,
+    usageCount: 0,
+    lastUsedAt: null
   }
 ];
 
@@ -90,6 +98,38 @@ export function cloneDemoData() {
   return structuredClone(demoData);
 }
 
+export function normalizeState(rawState) {
+  const categories = Array.isArray(rawState?.categories)
+    ? rawState.categories.map((category, index) => ({
+        id: category.id || crypto.randomUUID(),
+        name: category.name || `Section ${index + 1}`,
+        color: category.color || defaultPalette[index % defaultPalette.length],
+        parentId: category.parentId ?? null,
+        order: Number.isFinite(category.order) ? category.order : index
+      }))
+    : [];
+
+  const categoryIds = new Set(categories.map(category => category.id));
+
+  const shortcuts = Array.isArray(rawState?.shortcuts)
+    ? rawState.shortcuts.map((shortcut, index) => ({
+        id: shortcut.id || crypto.randomUUID(),
+        name: shortcut.name || '',
+        url: normalizeUrl(shortcut.url || ''),
+        categoryId: categoryIds.has(shortcut.categoryId) ? shortcut.categoryId : (categories[0]?.id || ''),
+        description: shortcut.description || '',
+        order: Number.isFinite(shortcut.order) ? shortcut.order : index,
+        usageCount: Number.isFinite(shortcut.usageCount) ? shortcut.usageCount : 0,
+        lastUsedAt: shortcut.lastUsedAt || null
+      }))
+    : [];
+
+  return {
+    categories: categories.sort((a, b) => a.order - b.order),
+    shortcuts: shortcuts.sort((a, b) => a.order - b.order)
+  };
+}
+
 export function loadLegacyLocalState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -110,11 +150,11 @@ export function loadLegacyLocalState() {
       }
 
       return {
-        id: crypto.randomUUID(),
+        id: category.id || crypto.randomUUID(),
         name: category.name,
         color: category.color || defaultPalette[index % defaultPalette.length],
         parentId: category.parentId ?? null,
-        order: index
+        order: Number.isFinite(category.order) ? category.order : index
       };
     });
 
@@ -123,13 +163,15 @@ export function loadLegacyLocalState() {
     const shortcuts = parsed.shortcuts.map((shortcut, index) => ({
       id: shortcut.id || crypto.randomUUID(),
       name: shortcut.name || '',
-      url: shortcut.url || '',
+      url: normalizeUrl(shortcut.url || ''),
       categoryId: shortcut.categoryId || categoryByName.get(shortcut.category) || categories[0]?.id || '',
       description: shortcut.description || '',
-      order: index
+      order: Number.isFinite(shortcut.order) ? shortcut.order : index,
+      usageCount: Number.isFinite(shortcut.usageCount) ? shortcut.usageCount : 0,
+      lastUsedAt: shortcut.lastUsedAt || null
     }));
 
-    return { categories, shortcuts };
+    return normalizeState({ categories, shortcuts });
   } catch {
     return null;
   }
@@ -193,10 +235,12 @@ export async function importStateFromFile(file) {
       categories[0]?.id ||
       '',
     description: shortcut.description || '',
-    order: Number.isFinite(shortcut.order) ? shortcut.order : index
+    order: Number.isFinite(shortcut.order) ? shortcut.order : index,
+    usageCount: Number.isFinite(shortcut.usageCount) ? shortcut.usageCount : 0,
+    lastUsedAt: shortcut.lastUsedAt || null
   }));
 
-  return { categories, shortcuts };
+  return normalizeState({ categories, shortcuts });
 }
 
 export function getChildrenCategories(categories, parentId = null) {

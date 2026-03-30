@@ -547,3 +547,18 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+@media (max-width: 1200px) {
+  .top-used-cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .top-used-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .top-used-cards {
+    grid-template-columns: repeat(2, minmax

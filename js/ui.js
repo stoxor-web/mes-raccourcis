@@ -80,6 +80,10 @@ function getCategoryLabel(categories, category) {
 }
 
 function renderTopUsed(state, elements) {
+  if (!elements.topUsedSection || !elements.topUsedContainer) {
+    return;
+  }
+
   const topShortcuts = [...state.shortcuts]
     .filter(item => (item.usageCount || 0) > 0)
     .sort((a, b) => {
@@ -87,7 +91,7 @@ function renderTopUsed(state, elements) {
       if (usageDiff !== 0) return usageDiff;
       return (b.lastUsedAt || 0) - (a.lastUsedAt || 0);
     })
-    .slice(0, 6);
+    .slice(0, 10);
 
   if (!topShortcuts.length) {
     elements.topUsedSection.classList.add('hidden');

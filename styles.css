@@ -532,6 +532,12 @@ textarea {
   flex-wrap: wrap;
 }
 
+@media (max-width: 1200px) {
+  .top-used-cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 980px) {
   .topbar {
     grid-template-columns: 1fr;
@@ -540,6 +546,10 @@ textarea {
   .topbar-right {
     justify-content: flex-start;
   }
+
+  .top-used-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 940px) {
@@ -547,18 +557,15 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
-@media (max-width: 1200px) {
-  .top-used-cards {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 980px) {
-  .top-used-cards {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
 
 @media (max-width: 700px) {
   .top-used-cards {
-    grid-template-columns: repeat(2, minmax
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .top-used-cards {
+    grid-template-columns: 1fr;
+  }
+}

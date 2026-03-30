@@ -306,22 +306,29 @@ function attachShortcutDragEvents() {
 }
 
 function attachCardEvents() {
-  document.querySelectorAll('[data-open-id]').forEach(link => {
-    link.onclick = async () => {
-      const item = state.shortcuts.find(shortcut => shortcut.id === link.dataset.openId);
-      if (!item) return;
+document.querySelectorAll('[data-open-id]').forEach(link => {
+  link.onclick = async event => {
+    event.preventDefault();
 
-      item.usageCount = (item.usageCount || 0) + 1;
-      item.lastUsedAt = Date.now();
+    const item = state.shortcuts.find(shortcut => shortcut.id === link.dataset.openId);
+    if (!item) {
+      window.open(link.href, '_blank', 'noopener,noreferrer');
+      return;
+    }
 
-      try {
-        await persistState();
-        rerender();
-      } catch (error) {
-        console.error(error);
-      }
-    };
-  });
+    item.usageCount = (item.usageCount || 0) + 1;
+    item.lastUsedAt = Date.now();
+
+    try {
+      await persistState();
+      rerender();
+    } catch (error) {
+      console.error(error);
+    }
+
+    window.open(link.href, '_blank', 'noopener,noreferrer');
+  };
+});
 
   document.querySelectorAll('[data-edit-id]').forEach(button => {
     button.onclick = () => {
